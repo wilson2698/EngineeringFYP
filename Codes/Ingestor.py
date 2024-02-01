@@ -47,6 +47,19 @@ def get_coefficients(data, V):
     CD = drag/half_rho_v2_s ## Not Blockage Corrected Yet
     return [CL, CD]
 
+def pct_change(df, base_col):
+    '''
+    Function here calculates the difference between the value and base value,
+    a negative sign shows a decrease while a positive sign is an increase
+    '''
+    out = pd.DataFrame(df['AOA'])
+    for col in df:
+        if col in ["AOA",base_col]:
+            continue
+        temp = ((df[col] - df[base_col])/abs(df[base_col]))*100
+        out[col] = temp
+    return out
+
 def ingest_experiment_set(folderpath):
     '''
     Ingest and calculate for each aoa in each configuration in each experiment set
@@ -89,8 +102,14 @@ def ingest_experiment_set(folderpath):
         CL_df.loc[:, config] = config_CL_temp
         CD_df.loc[:,config] = config_CD_temp
         CL_CD_df.loc[:,config] = config_CL_CD_temp
+
+    ## Calculate Percentage Changes from Clean Config
+    CL_change = pct_change(CL_df, "Clean")
+    CD_change = pct_change(CD_df, "Clean")
+    CL_CD_change = pct_change(CL_CD_df, "Clean")
     
     with pd.ExcelWriter("Data/FT1/output.xlsx",engine='xlsxwriter') as writer:
+        ## Coefficient Values
         CL_df.to_excel(writer, sheet_name="CL",index=False)
         CD_df.to_excel(writer, sheet_name="CD",index=False)
         CL_CD_df.to_excel(writer, sheet_name="CL_CD",index=False)
@@ -104,6 +123,20 @@ def ingest_experiment_set(folderpath):
         worksheet.insert_chart("P1", CD_chart)
         CL_CD_chart = make_coeff_chart("CL_CD", workbook, len(config_list), len(aoas))
         worksheet.insert_chart("A40", CL_CD_chart)
+
+        ## Coefficient Change Values
+        CL_change.to_excel(writer, sheet_name="CL_change",index=False)
+        CD_change.to_excel(writer, sheet_name="CD_change",index=False)
+        CL_CD_change.to_excel(writer, sheet_name="CL_CD_change",index=False)
+
+        percent_change_worksheet = workbook._add_sheet('PercentChange')
+
+        CL_change_chart = make_coeff_chart("CL_change", workbook, len(config_list)-1, len(aoas))
+        percent_change_worksheet.insert_chart("A1", CL_change_chart)
+        CD_change_chart = make_coeff_chart("CD_change", workbook, len(config_list)-1, len(aoas))
+        percent_change_worksheet.insert_chart("P1", CD_change_chart)
+        CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, len(config_list)-1, len(aoas))
+        percent_change_worksheet.insert_chart("A40", CL_CD_change_chart)
 
     
 def make_coeff_chart(coeff_name, workbook, n_configs, n_aoas):
