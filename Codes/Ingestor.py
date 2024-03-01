@@ -6,7 +6,7 @@ from airspeed import get_airspeeds
 from blockage_correction import maskell_blockage_correction, correct_blockage
 from charts import make_coeff_chart
 
-def ingest_experiment_set(folderpath):
+def ingest_experiment_set(folderpath, output_filepath):
     '''
     Ingest and calculate for each aoa in each configuration in each experiment set
     '''
@@ -65,7 +65,7 @@ def ingest_experiment_set(folderpath):
     CD_change = pct_change(CD_df, "Clean")
     CL_CD_change = pct_change(CL_CD_df, "Clean")
     
-    with pd.ExcelWriter(f"{folderpath}/output.xlsx",engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(output_filepath,engine='xlsxwriter') as writer:
         ## Coefficient Values
         CL_df.to_excel(writer, sheet_name="CL",index=True)
         CD_df.to_excel(writer, sheet_name="CD",index=True)
@@ -94,5 +94,3 @@ def ingest_experiment_set(folderpath):
         percent_change_worksheet.insert_chart("P1", CD_change_chart)
         CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, len(config_list)-1, len(aoas))
         percent_change_worksheet.insert_chart("A40", CL_CD_change_chart)
-
-ingest_experiment_set("Data/Sample")
