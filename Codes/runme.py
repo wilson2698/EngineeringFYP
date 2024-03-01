@@ -20,7 +20,7 @@ exp_folders = list(filter(lambda x: os.path.isdir(f"{data_dir}/{x}"), dir_list))
 ## Sample for testing
 # ingest_experiment_set(f"{data_dir}/Sample", output_filepath=f'Outputs/Sample.xlsx', blockage_correction_method="raw")
 
-bc_method = "raw" # ['raw','maskell']
+bc_method = "raw" # ['raw','maskell','al_obaidi]
 
 for exp in exp_folders:
     if exp == "Sample": # Ignore sample data
