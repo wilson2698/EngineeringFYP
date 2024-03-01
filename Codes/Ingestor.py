@@ -2,6 +2,8 @@ import pandas as pd
 import os
 from math import sin, radians
 
+from blockage_correction import maskell_blockage_correction, correct_blockage
+
 def get_data(filepath):
     '''
     This function serves to get the mean readings from the *.csv file output from the FT sensor.
@@ -52,9 +54,10 @@ def pct_change(df, base_col):
     Function here calculates the difference between the value and base value,
     a negative sign shows a decrease while a positive sign is an increase
     '''
-    out = pd.DataFrame(df['AOA'])
+    out = pd.DataFrame()
+    out.index = df.index
     for col in df:
-        if col in ["AOA",base_col]:
+        if col == base_col:
             continue
         temp = ((df[col] - df[base_col])/abs(df[base_col]))*100
         out[col] = temp
@@ -82,14 +85,14 @@ def ingest_experiment_set(folderpath):
     ## Initialise Outputs
     CL_df = pd.DataFrame({"AOA":aoas})
     CD_df = pd.DataFrame({"AOA":aoas})
-    CL_CD_df = pd.DataFrame({"AOA":aoas})
+    #CL_CD_df = pd.DataFrame({"AOA":aoas})
     ## For each configuration
     for config in config_list:
         ## Get airspeeds from file
         airspeeds = get_airspeeds(folderpath,config)
         config_CL_temp = []
         config_CD_temp = []
-        config_CL_CD_temp = []
+        #config_CL_CD_temp = []
 
         ## For each angle of attack
         for aoa in aoas:
@@ -98,21 +101,35 @@ def ingest_experiment_set(folderpath):
             CL,CD = get_coefficients(temp, airspeeds[aoa])
             config_CL_temp += [CL]
             config_CD_temp += [CD]
-            config_CL_CD_temp += [CL/CD]
+            #config_CL_CD_temp += [CL/CD]
         CL_df.loc[:, config] = config_CL_temp
         CD_df.loc[:,config] = config_CD_temp
-        CL_CD_df.loc[:,config] = config_CL_CD_temp
+        #CL_CD_df.loc[:,config] = config_CL_CD_temp
+    
+    ## Set AOA as index
+    CL_df = CL_df.set_index("AOA")
+    CD_df = CD_df.set_index("AOA")
+    #CL_CD_df = CL_CD_df.set_index("AOA")
+
+    ## get blockage ratios
+    br_df = pd.read_excel("Data/Frontal Area.xlsx", sheet_name="Blockage_Ratio")
+    br_df = br_df.set_index("AOA")
+
+    ## Find corrected drag coefficient based on blockage ratio
+    CD_df = correct_blockage(CD_df,br_df, maskell_blockage_correction)
+
+    CL_CD_df = CL_df/CD_df
 
     ## Calculate Percentage Changes from Clean Config
     CL_change = pct_change(CL_df, "Clean")
     CD_change = pct_change(CD_df, "Clean")
     CL_CD_change = pct_change(CL_CD_df, "Clean")
     
-    with pd.ExcelWriter("Data/FT1/output.xlsx",engine='xlsxwriter') as writer:
+    with pd.ExcelWriter(f"{folderpath}/output.xlsx",engine='xlsxwriter') as writer:
         ## Coefficient Values
-        CL_df.to_excel(writer, sheet_name="CL",index=False)
-        CD_df.to_excel(writer, sheet_name="CD",index=False)
-        CL_CD_df.to_excel(writer, sheet_name="CL_CD",index=False)
+        CL_df.to_excel(writer, sheet_name="CL",index=True)
+        CD_df.to_excel(writer, sheet_name="CD",index=True)
+        CL_CD_df.to_excel(writer, sheet_name="CL_CD",index=True)
 
         workbook = writer.book
         worksheet = workbook._add_sheet('Chart')
@@ -125,9 +142,9 @@ def ingest_experiment_set(folderpath):
         worksheet.insert_chart("A40", CL_CD_chart)
 
         ## Coefficient Change Values
-        CL_change.to_excel(writer, sheet_name="CL_change",index=False)
-        CD_change.to_excel(writer, sheet_name="CD_change",index=False)
-        CL_CD_change.to_excel(writer, sheet_name="CL_CD_change",index=False)
+        CL_change.to_excel(writer, sheet_name="CL_change",index=True)
+        CD_change.to_excel(writer, sheet_name="CD_change",index=True)
+        CL_CD_change.to_excel(writer, sheet_name="CL_CD_change",index=True)
 
         percent_change_worksheet = workbook._add_sheet('PercentChange')
 
@@ -177,4 +194,4 @@ def make_coeff_chart(coeff_name, workbook, n_configs, n_aoas):
     
 
 
-ingest_experiment_set("Data/FT1")
+ingest_experiment_set("Data/Sample")
