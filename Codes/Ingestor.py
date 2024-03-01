@@ -28,14 +28,13 @@ def ingest_experiment_set(folderpath):
     ## Initialise Outputs
     CL_df = pd.DataFrame({"AOA":aoas})
     CD_df = pd.DataFrame({"AOA":aoas})
-    #CL_CD_df = pd.DataFrame({"AOA":aoas})
+
     ## For each configuration
     for config in config_list:
         ## Get airspeeds from file
         airspeeds = get_airspeeds(folderpath,config)
         config_CL_temp = []
         config_CD_temp = []
-        #config_CL_CD_temp = []
 
         ## For each angle of attack
         for aoa in aoas:
@@ -44,15 +43,13 @@ def ingest_experiment_set(folderpath):
             CL,CD = get_coefficients(temp, airspeeds[aoa])
             config_CL_temp += [CL]
             config_CD_temp += [CD]
-            #config_CL_CD_temp += [CL/CD]
+
         CL_df.loc[:, config] = config_CL_temp
         CD_df.loc[:,config] = config_CD_temp
-        #CL_CD_df.loc[:,config] = config_CL_CD_temp
-    
+
     ## Set AOA as index
     CL_df = CL_df.set_index("AOA")
     CD_df = CD_df.set_index("AOA")
-    #CL_CD_df = CL_CD_df.set_index("AOA")
 
     ## get blockage ratios
     br_df = pd.read_excel("Data/Frontal Area.xlsx", sheet_name="Blockage_Ratio")
@@ -97,7 +94,5 @@ def ingest_experiment_set(folderpath):
         percent_change_worksheet.insert_chart("P1", CD_change_chart)
         CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, len(config_list)-1, len(aoas))
         percent_change_worksheet.insert_chart("A40", CL_CD_change_chart)
-    
-
 
 ingest_experiment_set("Data/Sample")
