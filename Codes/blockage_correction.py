@@ -1,6 +1,4 @@
-import pandas as pd
-
-def maskell_blockage_correction(Cd_u, br, theta=0.96):
+def maskell_blockage_correction(CD_u, br, theta=0.96):
     '''
     This function is ued to find the corrected drag coefficient using Maskell's method
     theta = 0.96 (default) for aerofoils
@@ -8,8 +6,18 @@ def maskell_blockage_correction(Cd_u, br, theta=0.96):
     Cd_u: uncorrected drag coefficient
     br: blockage ratio
     '''
-    Cd_c = Cd_u/(1 + theta*Cd_u*br)
-    return Cd_c
+    CD_c = CD_u/(1 + theta*CD_u*br)
+    return CD_c
+
+def al_obaidi_blockage_correction(CD_u, br):
+    '''
+    This function is ued to find the corrected drag coefficient using Maskell's method
+    Cd_u: uncorrected drag coefficient
+    br: blockage ratio
+    '''
+    y = 0.005*br**2 + 0.0133*br + 0.022
+    CD_c = CD_u*(1-y)
+    return CD_c
 
 def correct_blockage(CD_df, br_df, bc_method):
     CD_c_df = CD_df.copy()

@@ -3,7 +3,7 @@ import os
 
 from misc_functions import get_data, get_coefficients, pct_change
 from airspeed import get_airspeeds
-from blockage_correction import maskell_blockage_correction, correct_blockage
+from blockage_correction import maskell_blockage_correction, correct_blockage, al_obaidi_blockage_correction
 from charts import make_coeff_chart
 
 def ingest_experiment_set(folderpath, output_filepath, blockage_correction_method="raw"):
@@ -61,6 +61,9 @@ def ingest_experiment_set(folderpath, output_filepath, blockage_correction_metho
     elif blockage_correction_method.lower() == "maskell":
         print("Using Maskell's Blockage Correction Method")
         CD_df = correct_blockage(CD_df,br_df, maskell_blockage_correction)
+    elif blockage_correction_method== "al_obaidi":
+        print("Using Al-Obaidi's Blockage Correction Method")
+        CD_df = correct_blockage(CD_df,br_df, al_obaidi_blockage_correction)
     else:
         print("Unknown blockage correction, using uncorrected CD instead")
 
