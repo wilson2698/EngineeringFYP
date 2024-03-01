@@ -6,7 +6,7 @@ from airspeed import get_airspeeds
 from blockage_correction import maskell_blockage_correction, correct_blockage
 from charts import make_coeff_chart
 
-def ingest_experiment_set(folderpath, output_filepath):
+def ingest_experiment_set(folderpath, output_filepath, blockage_correction_method="raw"):
     '''
     Ingest and calculate for each aoa in each configuration in each experiment set
     '''
@@ -56,7 +56,13 @@ def ingest_experiment_set(folderpath, output_filepath):
     br_df = br_df.set_index("AOA")
 
     ## Find corrected drag coefficient based on blockage ratio
-    CD_df = correct_blockage(CD_df,br_df, maskell_blockage_correction)
+    if blockage_correction_method.lower() =="raw":
+        print("Using uncorrected CD")
+    elif blockage_correction_method.lower() == "maskell":
+        print("Using Maskell's Blockage Correction Method")
+        CD_df = correct_blockage(CD_df,br_df, maskell_blockage_correction)
+    else:
+        print("Unknown blockage correction, using uncorrected CD instead")
 
     CL_CD_df = CL_df/CD_df
 
