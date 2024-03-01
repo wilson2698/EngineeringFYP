@@ -1,8 +1,9 @@
 import pandas as pd
 import os
-from math import sin, radians
 
 from blockage_correction import maskell_blockage_correction, correct_blockage
+
+from airspeed import get_airspeeds
 
 def get_data(filepath):
     '''
@@ -12,27 +13,6 @@ def get_data(filepath):
     df = pd.read_csv(filepath)
     output = df[["Force X (N)","Force Y (N)", "Force Z (N)", "Torque X (N-m)", "Torque Y (N-m)", "Torque Z (N-m)"]].mean()
     return output
-
-def airspeed_from_pitot(h_static, h_total):
-    ## Constants
-    rho_h20 = 1000 #kg/m^3
-    g = 9.81 #m/s^2
-    rho_air = 1.18 #kg/m^3
-    theta = 30 #Angle of manometer in degrees
-
-    dynamic_pressure = ((h_total-h_static)/1000)*sin(radians(theta))*rho_h20*g
-    U_inf = (dynamic_pressure/(0.5*rho_air))**0.5
-
-    return U_inf
-
-def get_airspeeds(folder,config):
-    airspeeds = {}
-    h_readings = pd.read_excel(f"{folder}/AirSpeedTracker.xlsx", sheet_name=config, index_col="AOA")
-    
-    for aoa in h_readings.index:
-        airspeeds[aoa] = airspeed_from_pitot(h_readings.loc[aoa,"Hstatic"], h_readings.loc[aoa,"Htotal"])
-    
-    return airspeeds
 
 def get_coefficients(data, V):
     '''
