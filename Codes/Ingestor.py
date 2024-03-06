@@ -1,12 +1,12 @@
 import pandas as pd
 import os
 
-from misc_functions import get_data, get_coefficients, pct_change
+from misc_functions import get_data, get_coefficients
 from airspeed import get_airspeeds
 from blockage_correction import maskell_blockage_correction, correct_blockage, al_obaidi_blockage_correction
-from charts import make_coeff_chart
+from charts import make_excel
 
-def ingest_experiment_set(folderpath, output_filepath, blockage_correction_method="raw"):
+def ingest_experiment_set(folderpath, output_filepath=False, blockage_correction_method="raw"):
     '''
     Ingest and calculate for each aoa in each configuration in each experiment set
     '''
@@ -67,39 +67,16 @@ def ingest_experiment_set(folderpath, output_filepath, blockage_correction_metho
     else:
         print("Unknown blockage correction, using uncorrected CD instead")
 
-    CL_CD_df = CL_df/CD_df
-
-    ## Calculate Percentage Changes from Clean Config
-    CL_change = pct_change(CL_df, "Clean")
-    CD_change = pct_change(CD_df, "Clean")
-    CL_CD_change = pct_change(CL_CD_df, "Clean")
+    if output_filepath:
+        return make_excel(CL_df, CD_df, output_filepath)
+    else:
+        return [CL_df, CD_df]
     
-    with pd.ExcelWriter(output_filepath,engine='xlsxwriter') as writer:
-        ## Coefficient Values
-        CL_df.to_excel(writer, sheet_name="CL",index=True)
-        CD_df.to_excel(writer, sheet_name="CD",index=True)
-        CL_CD_df.to_excel(writer, sheet_name="CL_CD",index=True)
+def average_CL_CD(CL_list, CD_list):
+    CL_temp = pd.concat(CL_list)
+    CD_temp = pd.concat(CD_list)
 
-        workbook = writer.book
-        worksheet = workbook._add_sheet('Chart')
+    CL_avg = CL_temp.groupby(CL_temp.index).mean()
+    CD_avg = CD_temp.groupby(CD_temp.index).mean()
 
-        CL_chart = make_coeff_chart("CL", workbook, len(config_list), len(aoas))
-        worksheet.insert_chart("A1", CL_chart)
-        CD_chart = make_coeff_chart("CD", workbook, len(config_list), len(aoas))
-        worksheet.insert_chart("P1", CD_chart)
-        CL_CD_chart = make_coeff_chart("CL_CD", workbook, len(config_list), len(aoas))
-        worksheet.insert_chart("A40", CL_CD_chart)
-
-        ## Coefficient Change Values
-        CL_change.to_excel(writer, sheet_name="CL_change",index=True)
-        CD_change.to_excel(writer, sheet_name="CD_change",index=True)
-        CL_CD_change.to_excel(writer, sheet_name="CL_CD_change",index=True)
-
-        percent_change_worksheet = workbook._add_sheet('PercentChange')
-
-        CL_change_chart = make_coeff_chart("CL_change", workbook, len(config_list)-1, len(aoas))
-        percent_change_worksheet.insert_chart("A1", CL_change_chart)
-        CD_change_chart = make_coeff_chart("CD_change", workbook, len(config_list)-1, len(aoas))
-        percent_change_worksheet.insert_chart("P1", CD_change_chart)
-        CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, len(config_list)-1, len(aoas))
-        percent_change_worksheet.insert_chart("A40", CL_CD_change_chart)
+    return CL_avg, CD_avg
