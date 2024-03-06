@@ -5,7 +5,7 @@ from charts import make_excel
 
 ## Directory to find experiment folders from and where to save outputs
 data_dir = "Data"
-output_dir = "Outputs"
+output_dir = "Results"
 
 ## Make output directory if not exist
 if not os.path.exists(output_dir):
@@ -41,4 +41,4 @@ for bc_method in bc_methods:
         CD_list += [temp_output[1]]
 
     CL_avg, CD_avg = average_CL_CD(CL_list, CD_list)
-    output = make_excel(CL_avg, CD_avg, f'{output_dir}/{bc_method}/averaged_results.xlsx')
+    output = make_excel(CL_avg, CD_avg, f'{output_dir}/{bc_method}/averaged_results_{bc_method}.xlsx')

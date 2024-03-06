@@ -32,7 +32,7 @@ def make_coeff_chart(coeff_name, workbook, n_configs, n_aoas):
         }
         })
     chart.set_legend({'position': 'bottom'})
-    chart.set_title({'name': f'{coeff_name} agaisnt AOA'})
+    chart.set_title({'name': f'{coeff_name} against AOA'})
     chart.set_size({'x_scale': 1.7, 'y_scale': 2.5})
 
 
