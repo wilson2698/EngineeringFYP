@@ -52,5 +52,5 @@ def pct_change2(df):
     for base_col in compare_dict:
         for col in compare_dict[base_col]:
             temp = ((df[col] - df[base_col])/abs(df[base_col]))*100
-            out[col] = temp
+            out[f"{col}_vs_{base_col}"] = temp
     return out

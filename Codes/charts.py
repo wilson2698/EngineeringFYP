@@ -52,6 +52,7 @@ def make_excel(CL_df, CD_df, output_filepath):
     CL_CD_change = pct_change2(CL_CD_df)
 
     n_aoas, n_config = CL_df.shape
+    n_compare = CL_change.shape[1]
 
     with pd.ExcelWriter(output_filepath,engine='xlsxwriter') as writer:
         ## Coefficient Values
@@ -76,11 +77,11 @@ def make_excel(CL_df, CD_df, output_filepath):
 
         percent_change_worksheet = workbook._add_sheet('PercentChange')
 
-        CL_change_chart = make_coeff_chart("CL_change", workbook, n_config-1, n_aoas)
+        CL_change_chart = make_coeff_chart("CL_change", workbook, n_compare, n_aoas)
         percent_change_worksheet.insert_chart("A1", CL_change_chart)
-        CD_change_chart = make_coeff_chart("CD_change", workbook, n_config-1, n_aoas)
+        CD_change_chart = make_coeff_chart("CD_change", workbook, n_compare, n_aoas)
         percent_change_worksheet.insert_chart("P1", CD_change_chart)
-        CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, n_config-1, n_aoas)
+        CL_CD_change_chart = make_coeff_chart("CL_CD_change", workbook, n_compare, n_aoas)
         percent_change_worksheet.insert_chart("A40", CL_CD_change_chart)
 
         return [CL_df, CD_df, CL_CD_df,CL_change, CD_change, CL_CD_change]
