@@ -1,6 +1,6 @@
 import pandas as pd
 
-from misc_functions import pct_change
+from misc_functions import pct_change2
 
 def make_coeff_chart(coeff_name, workbook, n_configs, n_aoas):
     '''
@@ -43,9 +43,13 @@ def make_excel(CL_df, CD_df, output_filepath):
     CL_CD_df = CL_df/CD_df
 
     ## Calculate Percentage Changes from Clean Config
-    CL_change = pct_change(CL_df, "Clean")
-    CD_change = pct_change(CD_df, "Clean")
-    CL_CD_change = pct_change(CL_CD_df, "Clean")
+    # CL_change = pct_change(CL_df, "Clean")
+    # CD_change = pct_change(CD_df, "Clean")
+    # CL_CD_change = pct_change(CL_CD_df, "Clean")
+    
+    CL_change = pct_change2(CL_df)
+    CD_change = pct_change2(CD_df)
+    CL_CD_change = pct_change2(CL_CD_df)
 
     n_aoas, n_config = CL_df.shape
 

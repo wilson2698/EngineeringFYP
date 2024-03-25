@@ -37,3 +37,20 @@ def pct_change(df, base_col):
         temp = ((df[col] - df[base_col])/abs(df[base_col]))*100
         out[col] = temp
     return out
+
+def pct_change2(df):
+    compare_dict = {
+        "Clean":["1b","3b","5b","7b","9b"],
+        "1b": ["1b_3b","1b_5b","1b_7b","1b_9b"],
+        "3b": ["1b_3b","3b_5b","3b_7b","3b_9b"],
+        "5b": ["1b_5b","3b_5b","5b_7b","5b_9b"],
+        "7b": ["1b_7b","3b_7b","5b_7b","7b_9b"],
+        "9b": ["1b_9b","3b_9b","5b_9b","7b_9b"],
+    }
+    out = pd.DataFrame()
+    out.index = df.index
+    for base_col in compare_dict:
+        for col in compare_dict[base_col]:
+            temp = ((df[col] - df[base_col])/abs(df[base_col]))*100
+            out[col] = temp
+    return out
